@@ -1,47 +1,49 @@
-pipeline{
-  agent any
+pipeline {
+    agent any
 
-  parameters {
-        string(name: 'tomcat_dev',defaultValue: '35.154.153.67', description: 'Staging server')
-        string(name: 'tomcat_prod',defaultValue: '13.126.146.72', description: 'Production server')
-      }
+    tools {
+    maven 'localMAven'
+    }
 
-  triggers{
-    pollSCM('* * * * *')
-  }
 
-  stages{
-    stage('Build Package'){
-      steps{
-              sh 'mvn clean package'
-      }
-
-      post {
-        success {
-          archiveArtifacts artifacts: '**/target/*.war'
+    stages{
+        stage('Build Package'){
+            steps {
+                sh 'mvn clean package'
+            }
+            post {
+                success {
+                    echo 'Now Archiving...'
+                    archiveArtifacts artifacts: '**/target/*.war'
+                }
+            }
         }
-      }
 
+        stage ('Deploy to staging : local container localhost:8090'){
+          steps{
+            build job: 'deploy-to-staging'
+          }
+        }
+
+        stage ('Deploy to Production : local container localhost:9090'){
+          steps{
+            timeout(time:5, unit:'DAYS'){
+              input message: 'Approve Production Deployment?'
+            }
+
+            build job: 'deploy-to-prod'
+          }
+
+          post{
+            success{
+              echo 'Code Deployed to Production'
+            }
+
+            failure{
+              echo 'Deployment failed'
+              //send an email to developer/devOps engineer
+            }
+          }
+        }
     }
-
-  stage('Deploy to staging'){
-
-    steps{
-          sh "scp -i ~/Desktop/ssh/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
-    }
-
-  }
-
-  stage('Deploy to Production'){
-
-    steps{
-      timeout(time:5, unit:'DAYS'){
-        input message: 'Approve Production Deployment?'
-      }
-          sh "scp -i ~/Desktop/ssh/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
-    }
-
-  }
-
-
 }
