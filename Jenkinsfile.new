@@ -1,37 +1,38 @@
-pipeline{
-  agent any
 
-  tools {
-  maven 'localMAven'
-  }
+pipeline {
+    agent any
 
-  parameters {
-        string(name: 'tomcat_dev',defaultValue: '35.154.153.67', description: 'Staging server')
-        string(name: 'tomcat_prod',defaultValue: '13.126.146.72', description: 'Production server')
-      }
-
-  triggers{
-    pollSCM('* * * * *')
-  }
-
-  stages{
-    stage('Build Package'){
-      steps{
-              sh 'mvn clean package'
-      }
-
-      post {
-        success {
-          archiveArtifacts artifacts: '**/target/*.war'
-        }
-      }
-
+    tools {
+    maven 'localMAven'
     }
+
+    parameters {
+         string(name: 'tomcat_dev', defaultValue: '35.154.153.67', description: 'Staging Server')
+         string(name: 'tomcat_prod', defaultValue: '13.126.146.72', description: 'Production Server')
+    }
+
+    triggers {
+         pollSCM('* * * * *')
+     }
+
+stages{
+        stage('Build'){
+            steps {
+                sh 'mvn clean package'
+            }
+            post {
+                success {
+                    echo 'Now Archiving...'
+                    archiveArtifacts artifacts: '**/target/*.war'
+                }
+            }
+        }
+
 
   stage('Deploy to staging'){
 
     steps{
-          sh "scp -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
+          sh "scp -i /Users/Shared/Jenkins/Home/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
     }
 
   }
@@ -42,7 +43,7 @@ pipeline{
       timeout(time:5, unit:'DAYS'){
         input message: 'Approve Production Deployment?'
       }
-          sh "scp -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
+          sh "scp -i /Users/Shared/Jenkins/Home/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
     }
 
   }
