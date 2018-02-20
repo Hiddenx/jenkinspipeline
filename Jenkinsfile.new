@@ -32,9 +32,8 @@ stages{
   stage('Deploy to staging'){
 
     steps{
-          //Move it to home folder - since we cant use sudo in scp
-          sh "scp -o StrictHostKeyChecking=no -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_dev}:~/"
-          sh "ssh -o StrictHostKeyChecking=no -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem 'sh -s' < /Users/Shared/Jenkins/Home/workspace/movefiles.sh"
+          //using ansible
+          sh "ansible -i /Users/Shared/Jenkins/Home/workspace/dev, -b -m copy -a 'src=**/target/*.war dest=/var/lib/tomcat7/webapps/' all"
     }
 
   }
@@ -45,8 +44,8 @@ stages{
       timeout(time:5, unit:'DAYS'){
         input message: 'Approve Production Deployment?'
       }
-          sh "scp -o StrictHostKeyChecking=no -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_dev}:~/"
-          sh "ssh -o StrictHostKeyChecking=no -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem 'sh -s' < /Users/Shared/Jenkins/Home/workspace/movefiles.sh"
+
+          sh "ansible -i /Users/Shared/Jenkins/Home/workspace/prod, -b -m copy -a 'src=**/target/*.war dest=/var/lib/tomcat7/webapps/' all"
     }
 
   }
