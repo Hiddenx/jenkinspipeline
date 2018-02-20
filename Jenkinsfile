@@ -29,7 +29,7 @@ pipeline {
         stage ('Deploy to Production : local container localhost:9090'){
           steps{
             timeout(time:5, unit:'DAYS'){
-              input messasge: 'Approve Production Deployment?'
+              input message: 'Approve Production Deployment?'
             }
 
             build job: 'deploy-to-prod'
