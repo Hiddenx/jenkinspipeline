@@ -31,7 +31,7 @@ pipeline{
   stage('Deploy to staging'){
 
     steps{
-          sh "scp -i /Users/hiddenx/Desktop/ssh/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
+          sh "scp -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
     }
 
   }
@@ -42,7 +42,7 @@ pipeline{
       timeout(time:5, unit:'DAYS'){
         input message: 'Approve Production Deployment?'
       }
-          sh "scp -i /Users/hiddenx/Desktop/ssh/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
+          sh "scp -i /Users/Shared/Jenkins/Home/workspace/EC2-DEMO.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
     }
 
   }
