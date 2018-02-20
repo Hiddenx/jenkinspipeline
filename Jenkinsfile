@@ -20,9 +20,30 @@ pipeline {
             }
         }
 
-        stage ('Deploy to staging'){
+        stage ('Deploy to staging : local container localhost:8090'){
           steps{
             build job: 'deploy-to-staging'
+          }
+        }
+
+        stage ('Deploy to Production : local container localhost:9090'){
+          steps{
+            timeout(time:5, unit:'DAYS'){
+              input messasge: 'Approve Production Deployment?'
+            }
+
+            build job: 'deploy-to-prod'
+          }
+
+          post{
+            success{
+              echo 'Code Deployed to Production'
+            }
+
+            failure{
+              echo 'Deployment failed'
+              //send an email to developer/devOps engineer
+            }
           }
         }
     }
